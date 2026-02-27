@@ -1,0 +1,33 @@
+#N.B. Don't put your folder names in quotes
+
+KENREF ...
+    LABEL=kenref
+#    STRIDE=5
+    MODEL=SIGMA
+    K=1.0
+    N=0.25
+
+#========= SIGMA RELATED ======================
+    EXP_DATA_FOLDER=/home/amr/CLionProjects/KEnRef/res/sigma/md_single
+    PROTON_MHZ=700.0
+#    RATES=XXXXXXXXXXXXXXXXXX (TODO change it to a RATES file location)
+#    index = "../../../sigma/md_double/KEnRefAtomIndex.ndx"
+#===============================================
+#========= PLATEAUS RELATED ====================
+#    EXP_DATA_FILE=XXXXXXXXXXXXXXXXXX
+#===============================================
+    GUIDE_ATOMS=39,60,82,101,117,234,241,256,270,284,358,368,383,397,407,422,444,454,474,496,513,534,544,558,626,642,666,680,701,771,785,805,819
+    REF=/home/amr/CLionProjects/KEnRef/res/sigma/md_single/GB3_27_10us.pdb
+    ATOMNAME_MAPPING=/home/amr/CLionProjects/KEnRef/res/sigma/md_single/GB3_27_10us.pdb
+
+    MAX_FORCE=999
+    FIT_TO_REFERENCE
+    SATURATE_FORCES
+
+#    UPDATE_FROM=50
+#    UPDATE_UNTIL = 100
+... KENREF
+
+# Access the components
+PRINT ARG=kenref.bias,kenref.energy,kenref.rmsd FILE=kenref.out STRIDE=10
+

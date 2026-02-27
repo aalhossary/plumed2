@@ -376,6 +376,7 @@ PLUMED_CONFIG_ENABLE([libtorch],[search for libtorch],[no]) #added by luigibonat
 PLUMED_CONFIG_ENABLE([libmetatomic],[search for libmetatomic],[no])
 PLUMED_CONFIG_ENABLE([linuxperf],[activate the compile options for a more accurate report with perf on linux],[no])
 PLUMED_CONFIG_ENABLE([openacc],[search for openacc (use PLUMED_ACC_TYPE and PLUMED_ACC_GPU for controlling the settings)],[no])
+PLUMED_CONFIG_ENABLE([kenref],[search for kenref core library],[no]) # Added by Amr Alhossary
 
 AC_ARG_VAR(SOEXT,[extension of dynamic libraries (so/dylib)])
 AC_ARG_VAR(STATIC_LIBS,[variables that should be linked statically directly to MD code - configure will add here -ldl if necessary ])
@@ -392,6 +393,7 @@ if test -z "$CXXFLAGS"
 then
   CXXFLAGS=-O3
 fi
+
 # this is a list of common compilers
 compilers="g++ c++ cxx icpc"
 c_compilers="gcc cc icc"
@@ -956,6 +958,83 @@ fi
 if test "$af_cpu" = true ; then
   PLUMED_CHECK_PACKAGE([arrayfire.h],[af_is_double],[__PLUMED_HAS_ARRAYFIRE],[afcpu])
 fi
+
+# ==============================================================================
+# KEnRef LIBRARY CHECK (Standard Autoconf Implementation)
+# ==============================================================================
+AC_DEFUN([KENREF_CHECK_LIBS], [
+  AC_MSG_NOTICE([Checking for KEnRef (NMR Relaxation Energy potential) using PKG-CONFIG...])
+
+  # --- Define status variables using AC_SUBST ---
+  # These variables will be substituted into Makefiles and other outputs.
+  # We initialize the flags and the required link/include variables to empty.
+  AC_SUBST([HAVE_KENREF], [no])
+  AC_SUBST([KENREF_LIBS], [""])
+  AC_SUBST([KENREF_INCLUDE], [""])
+
+
+  # --- Try 1: Separate kenref_core and Eigen3 ---
+  AC_MSG_NOTICE([  Trying: kenref_core + external Eigen3...])
+
+  # PKG_CHECK_MODULES checks for both Cflags and Libs.
+  # If found, it defines: KENREF_C_CFLAGS, KENREF_C_LIBS, KENREF_E_CFLAGS, KENREF_E_LIBS
+  # Note: The third argument is the shell command if found, fourth is if not found.
+
+  PKG_CHECK_MODULES([KENREF_C], [kenref_core], [
+    AC_MSG_NOTICE([    Found kenref_core. Checking for Eigen3...])
+
+    PKG_CHECK_MODULES([KENREF_E], [eigen3], [
+
+      # SUCCESS 1: Found both. Set final variables.
+      AC_MSG_NOTICE([    SUCCESS: KEnRef Core linked with external Eigen3.])
+
+      AC_SUBST([KENREF_LIBS], ["$KENREF_C_LIBS $KENREF_E_LIBS"])
+      AC_SUBST([KENREF_INCLUDE], ["$KENREF_C_CFLAGS $KENREF_E_CFLAGS"])
+      AC_SUBST([HAVE_KENREF], [yes])
+      # Next line is new
+      LIBS="$KENREF_C_LIBS $KENREF_E_LIBS $LIBS"
+      have_kenref=yes
+    ], [
+      # FAILURE 1b: kenref_core found, but Eigen3 not found.
+      AC_MSG_NOTICE([    FAILURE: Eigen3 not available. Falling back...])
+    ])
+  ], [
+    # FAILURE 1a: kenref_core not found.
+    AC_MSG_NOTICE([  kenref_core not found. Falling back to kenref_and_eigen3...])
+  ])
+
+
+  # --- Try 2: Self-Contained kenref_and_eigen3 (Fallback) ---
+  # We only run this if HAVE_KENREF is still 'no' (i.e., Try 1 failed).
+  AS_IF([test "x$HAVE_KENREF" != "xyes"], [
+
+    AC_MSG_NOTICE([  Trying: kenref_and_eigen3 (self-contained)...])
+
+    PKG_CHECK_MODULES([KENREF_FALLBACK], [kenref_and_eigen3], [
+
+      # SUCCESS 2: Found the fallback. Set final variables.
+      AC_MSG_NOTICE([    SUCCESS: KEnRef linked with self-contained library.])
+
+      AC_SUBST([KENREF_LIBS], ["$KENREF_FALLBACK_LIBS"])
+      AC_SUBST([KENREF_INCLUDE], ["$KENREF_FALLBACK_CFLAGS"])
+      AC_SUBST([HAVE_KENREF], [yes])
+      # Next line is new
+      LIBS="$KENREF_FALLBACK_LIBS $LIBS"
+      have_kenref=yes
+    ], [
+      # FAILURE 2: Neither option worked.
+      AC_MSG_NOTICE([    FAILURE: KEnRef integration not possible. Neither pkg-config file found.])
+      AC_SUBST([HAVE_KENREF], [no])
+      have_kenref=no
+    ])
+  ])
+
+  # Final status output
+  AC_MSG_NOTICE([KEnRef Final Status: $HAVE_KENREF])
+])dnl
+
+# Require the check to run during the PLUMED configuration process
+KENREF_CHECK_LIBS
 
 # libmetatomic requires libtorch
 if test $libmetatomic = true ; then
@@ -1631,7 +1710,7 @@ AC_CONFIG_FILES([Makefile.conf sourceme.sh])
 # The date of this file keeps track of when Makefile.conf and sourceme.sh have been updated
 AC_CONFIG_FILES([stamp-h], [echo timestamp > stamp-h])
 
-#small report for the final configuaration, useful to inspects flags in the CI 
+#small report for the final configuaration, useful to inspects flags in the CI
 AC_MSG_NOTICE([Reporting the configuration:])
 AC_MSG_NOTICE([Final CXX:         $CXX])
 AC_MSG_NOTICE([Final CXXFLAGS:    $CXXFLAGS])

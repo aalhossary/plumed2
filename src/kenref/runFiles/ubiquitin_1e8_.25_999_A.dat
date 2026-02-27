@@ -1,0 +1,34 @@
+#N.B. Don't put your folder names in quotes
+
+KENREF ...
+    LABEL=kenref
+    ARG=
+#    STRIDE=5
+    MODEL=PLATEAUS
+#    MODEL=SIGMA
+    K=1e8
+    N=0.25
+
+#========= SIGMA RELATED ======================
+#    EXP_DATA_FOLDER=/smithlab/home/nblangdon/GB3/KEnRef-GB3/gb3-kenref-sigma/start_KEnRef_sigma/input_2
+#    PROTON_MHZ=700.0
+##    RATES=XXXXXXXXXXXXXXXXXX (TODO change it to a RATES file location)
+#===============================================
+#========= PLATEAUS RELATED ====================
+    EXP_DATA_FILE=/smithlab/home/aalhossary/ubiquitin-plateaus-plumed/10nsstart+fitting/singleton_data_10nsstart+fit_3-5_1977pairs_80_A.csv
+#===============================================
+    GUIDE_ATOMS=5,22,39,58,78,94,116,130,149,163,170,192,206,225,239,258,273,289,312,318,329,341,355,374,389,403,419,441,451,473,492,509,521,543,558,565,592,606,612,624,641,658,682,701,720,740,750,757,779,796,815,830,842,849,873,887,906,917,929,950,964,983,1000,1022,1037,1048,1062,1081,1098
+
+    REF=/smithlab/home/aalhossary/ubiquitin-plateaus-plumed/10nsstart+fitting/alef.pdb
+    ATOMNAME_MAPPING=/smithlab/home/aalhossary/ubiquitin-plateaus-plumed/10nsstart+fitting/alef.pdb
+
+    MAX_FORCE=999
+    FIT_TO_REFERENCE
+    SATURATE_FORCES
+
+#    UPDATE_FROM=50
+#    UPDATE_UNTIL = 100
+... KENREF
+
+# Access the components
+PRINT ARG=kenref.bias,kenref.energy,kenref.rmsd FILE=kenref.out STRIDE=100
