@@ -11,4 +11,4 @@ fi
 echo "PLUMED_KERNEL=$PLUMED_KERNEL"
 
 #When you run multi simulations, you need to have the file in a relative folder
-mpirun -n 2 gmx_mpi mdrun -s topol.tpr -multidir repl_01 repl_02 -nsteps 50 -plumed ../../runFiles/test_double.dat # -deffnm $fnm &>> $outname
+mpirun -n 2 gmx_mpi mdrun -s topol.tpr -multidir repl_01 repl_02 -nsteps 50 -plumed ../../runFiles/test_double.dat
