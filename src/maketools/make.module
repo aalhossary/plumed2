@@ -14,7 +14,7 @@ ifdef GCCDEP
 
 # source for plumed kernel
 SRC=$(wildcard *.cpp)
-
+CXXFLAGS += -Wno-pass-failed -Wno-unused-command-line-argument
 # corresponding objects:
 OBJ=$(SRC:.cpp=.o)
 
