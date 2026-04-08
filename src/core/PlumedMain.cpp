@@ -67,6 +67,7 @@
 #include <optional>
 #include <variant>
 #include <filesystem>
+#include <unistd.h>
 
 namespace PLMD {
 
@@ -289,6 +290,19 @@ PlumedMain::PlumedMain():
   stopwatch_fwd(log),
   actionSet_fwd(*this),
   passtools(DataPassingTools::create(sizeof(double))) {
+
+  bool debug = false;
+  const char* debug_val = std::getenv("KNDEBUG");
+  if (debug_val != nullptr) {
+    debug = true;
+  }
+
+  volatile bool holdToDebug = true;
+  while (/*simulationIndex > 0 &&*/ debug && holdToDebug) {
+    sleep(1);
+  }
+
+
   passtools->usingNaturalUnits=false;
   increaseReferenceCounter();
   log.link(comm);
